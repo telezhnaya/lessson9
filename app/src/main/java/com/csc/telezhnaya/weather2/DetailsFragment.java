@@ -1,10 +1,8 @@
 package com.csc.telezhnaya.weather2;
 
 
-import android.database.ContentObserver;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -52,8 +50,6 @@ public class DetailsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 View p = (View) v.getParent();
-
-
                 Cursor idCursor = getActivity().getContentResolver().query(
                         MainActivity.ENTRIES_URI, new String[]{WeatherTable._ID}, null, null, null);
                 if (idCursor != null) {
@@ -81,14 +77,6 @@ public class DetailsFragment extends Fragment {
                 getActivity().getContentResolver().delete(MainActivity.ENTRIES_URI, WeatherTable.COLUMN_CITY + "='"
                         + currCity + "'", null);
                 next.callOnClick();
-            }
-        });
-
-
-        getActivity().getContentResolver().registerContentObserver(MainActivity.ENTRIES_URI, false, new ContentObserver(new Handler()) {
-            @Override
-            public boolean deliverSelfNotifications() {
-                return super.deliverSelfNotifications();
             }
         });
 

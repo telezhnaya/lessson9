@@ -1,7 +1,7 @@
 package com.csc.telezhnaya.weather2;
 
+import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -12,7 +12,9 @@ import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CursorAdapter;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -26,6 +28,32 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
+
+        Button add = (Button) view.findViewById(R.id.add);
+        add.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                View p = (View) v.getParent();
+                EditText editText = (EditText) p.findViewById(R.id.city_name);
+                String text = editText.getText().toString();
+                if (!text.isEmpty()) {
+                    Cursor cursor = getActivity().getContentResolver().query(MainActivity.ENTRIES_URI, null,
+                            WeatherTable.COLUMN_CITY + " = '" + text + "'", null, null);
+                    if (cursor == null || cursor.getCount() == 0) {
+                        ContentValues values = new ContentValues();
+                        values.put(WeatherTable.COLUMN_CITY, text);
+                        getActivity().getContentResolver().insert(MainActivity.ENTRIES_URI, values);
+                        new UpdateWeatherTask(getActivity().getContentResolver(), null, null).execute(text);
+                        editText.setText("");
+                    }
+
+                    if (cursor != null) {
+                        cursor.close();
+                    }
+                }
+            }
+        });
+
         ListView listTasks = (ListView) view.findViewById(R.id.list_items);
         adapter = new CursorAdapter(getContext(), null, 0) {
             @Override
@@ -55,7 +83,7 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
                         if (details == null) {
                             ft.replace(R.id.fragment_all, fragment).commit();
                         } else {
-                            ft.add(R.id.fragment_details, fragment).commit();
+                            ft.replace(R.id.fragment_details, fragment).commit();
                         }
                     }
                 });

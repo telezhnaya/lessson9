@@ -11,11 +11,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.EditText;
 
 import com.csc.telezhnaya.weather2.database.MyContentProvider;
 import com.csc.telezhnaya.weather2.database.WeatherTable;
@@ -42,13 +37,12 @@ public class MainActivity extends AppCompatActivity {
                 }
                 initCursor.close();
             }
-
             updateAllWeather(getContentResolver());
         }
 
-        getSupportFragmentManager().beginTransaction().add(R.id.fragment_all, new MainFragment()).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_all, new MainFragment()).commit();
         if (findViewById(R.id.fragment_details) != null) {
-            getSupportFragmentManager().beginTransaction().add(R.id.fragment_details, new DetailsFragment()).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_details, new DetailsFragment()).commit();
         }
 
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
@@ -57,26 +51,6 @@ public class MainActivity extends AppCompatActivity {
         alarmManager.cancel(pendingIntent);
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis(),
                 60 * 60 * 1000, pendingIntent);
-    }
-
-    public void onAddClick(View view) {
-        EditText editText = (EditText) ((View) view.getParent()).findViewById(R.id.city_name);
-        String text = editText.getText().toString();
-        if (!text.isEmpty()) {
-            Cursor cursor = getContentResolver().query(ENTRIES_URI, null,
-                    WeatherTable.COLUMN_CITY + " = '" + text + "'", null, null);
-            if (cursor == null || cursor.getCount() == 0) {
-                ContentValues values = new ContentValues();
-                values.put(WeatherTable.COLUMN_CITY, text);
-                getContentResolver().insert(ENTRIES_URI, values);
-                new UpdateWeatherTask(getContentResolver(), null, null).execute(text);
-                editText.setText("");
-            }
-
-            if (cursor != null) {
-                cursor.close();
-            }
-        }
     }
 
     private static void updateAllWeather(ContentResolver resolver) {

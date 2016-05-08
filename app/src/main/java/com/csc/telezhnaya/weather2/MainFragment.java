@@ -47,17 +47,15 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
                     @Override
                     public void onClick(View v) {
                         FrameLayout details = (FrameLayout) getActivity().findViewById(R.id.fragment_details);
+                        Bundle bundle = new Bundle();
+                        bundle.putString(MainActivity.CITY, "'" + name + "'");
+                        FragmentTransaction ft = getFragmentManager().beginTransaction();
+                        DetailsFragment fragment = new DetailsFragment();
+                        fragment.setArguments(bundle);
                         if (details == null) {
-                            Bundle bundle = new Bundle();
-                            bundle.putString(MainActivity.CITY, "'" + name + "'");
-                            FragmentTransaction ft = getFragmentManager().beginTransaction();
-                            DetailsFragment fragment = new DetailsFragment();
-                            fragment.setArguments(bundle);
                             ft.replace(R.id.fragment_all, fragment).commit();
                         } else {
-                            Intent intent = new Intent(getContext(), MainActivity.class);
-                            intent.putExtra(MainActivity.CITY, "'" + name + "'");
-                            startActivity(intent);
+                            ft.add(R.id.fragment_details, fragment).commit();
                         }
                     }
                 });

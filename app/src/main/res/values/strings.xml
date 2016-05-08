@@ -1,5 +1,11 @@
 <resources>
-    <string name="app_name">lesson9</string>
-    <string name="action_add">Add</string>
-    <string name="title_activity_main">MainActivity</string>
+    <string name="app_name">Weather</string>
+    <string name="city_name">City:</string>
+    <string name="temperature">Temperature:</string>
+    <string name="pressure">Pressure:</string>
+    <string name="wind">Wind speed:</string>
+    <string name="last_update">Last update:</string>
+    <string name="add">Add</string>
+    <string name="refresh">Refresh</string>
+    <string name="delete">Delete</string>
 </resources>

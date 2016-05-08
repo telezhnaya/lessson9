@@ -3,9 +3,9 @@ package com.csc.telezhnaya.weather2;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.net.Uri;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -13,15 +13,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.csc.telezhnaya.weather2.database.WeatherTable;
-import com.csc.telezhnaya.weather2.database.MyContentProvider;
 
 public class MainFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
-    public static final Uri ENTRIES_URI = Uri.withAppendedPath(MyContentProvider.CONTENT_URI, "entries");
     private CursorAdapter adapter;
 
     @Override
@@ -35,7 +34,7 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
             }
 
             @Override
-            public void bindView(View view, Context context, Cursor cursor) {
+            public void bindView(final View view, Context context, Cursor cursor) {
                 LinearLayout linearLayout = (LinearLayout) view.findViewById(R.id.item_list);
                 TextView temperature = (TextView) view.findViewById(R.id.item_list_temp);
                 temperature.setText(cursor.getString(cursor.getColumnIndex(WeatherTable.COLUMN_TEMPERATURE)));
@@ -47,12 +46,21 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
                 linearLayout.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Intent intent = new Intent(getContext(), DetailsActivity.class);
-                        intent.putExtra(DetailsActivity.CITY, "'" + name + "'");
-                        startActivity(intent);
+                        FrameLayout details = (FrameLayout) getActivity().findViewById(R.id.fragment_details);
+                        if (details == null) {
+                            Bundle bundle = new Bundle();
+                            bundle.putString(MainActivity.CITY, "'" + name + "'");
+                            FragmentTransaction ft = getFragmentManager().beginTransaction();
+                            DetailsFragment fragment = new DetailsFragment();
+                            fragment.setArguments(bundle);
+                            ft.replace(R.id.fragment_all, fragment).commit();
+                        } else {
+                            Intent intent = new Intent(getContext(), MainActivity.class);
+                            intent.putExtra(MainActivity.CITY, "'" + name + "'");
+                            startActivity(intent);
+                        }
                     }
                 });
-
             }
         };
         listTasks.setAdapter(adapter);
@@ -62,7 +70,7 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(getActivity(), ENTRIES_URI, null, null, null, null);
+        return new CursorLoader(getActivity(), MainActivity.ENTRIES_URI, null, null, null, null);
     }
 
     @Override

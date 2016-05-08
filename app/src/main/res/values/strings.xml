@@ -7,5 +7,6 @@
     <string name="last_update">Last update:</string>
     <string name="add">Add</string>
     <string name="refresh">Refresh</string>
+    <string name="next">Next city</string>
     <string name="delete">Delete</string>
 </resources>

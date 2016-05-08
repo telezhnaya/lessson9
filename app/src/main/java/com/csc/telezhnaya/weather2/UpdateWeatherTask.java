@@ -2,8 +2,10 @@ package com.csc.telezhnaya.weather2;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.database.Cursor;
+import android.content.res.Resources;
 import android.os.AsyncTask;
+import android.view.View;
+import android.widget.TextView;
 
 import com.csc.telezhnaya.weather2.database.WeatherTable;
 import com.google.gson.Gson;
@@ -14,29 +16,25 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
-public class UpdateWeatherTask extends AsyncTask<Void, Void, ArrayList<UpdateWeatherTask.JsonWeatherDescription>> {
+public class UpdateWeatherTask extends AsyncTask<String, Void, ArrayList<UpdateWeatherTask.JsonWeatherDescription>> {
     private static final String URL = "http://api.openweathermap.org/data/2.5/weather";
     private ContentResolver resolver;
+    private View view;
+    private Resources resources;
 
-    UpdateWeatherTask(ContentResolver resolver) {
+    UpdateWeatherTask(ContentResolver resolver, View view, Resources resources) {
         this.resolver = resolver;
+        this.view = view;
+        this.resources = resources;
     }
 
     @Override
-    protected ArrayList<JsonWeatherDescription> doInBackground(Void... params) {
-        ArrayList<String> cities = new ArrayList<>();
-        Cursor cursor = resolver.query(MainFragment.ENTRIES_URI, new String[]{WeatherTable.COLUMN_CITY}, null, null, null);
-        if (cursor != null) {
-            while (cursor.moveToNext()) {
-                cities.add(cursor.getString(cursor.getColumnIndex(WeatherTable.COLUMN_CITY)));
-            }
-            cursor.close();
-        }
-
+    protected ArrayList<JsonWeatherDescription> doInBackground(String... params) {
         ArrayList<JsonWeatherDescription> weathers = new ArrayList<>();
-        for (String city : cities) {
+        for (String city : params) {
             StringBuilder json = new StringBuilder();
             try {
                 URL urlObject = new URL(URL + "?q=" + URLEncoder.encode(city, "UTF-8") + "&APPID=76c1fbdf0c24d3528b0ed685d88f31ea");
@@ -67,13 +65,24 @@ public class UpdateWeatherTask extends AsyncTask<Void, Void, ArrayList<UpdateWea
 
     @Override
     protected void onPostExecute(ArrayList<JsonWeatherDescription> cities) {
+        long time = Calendar.getInstance().getTimeInMillis();
         for (JsonWeatherDescription description : cities) {
             ContentValues values = new ContentValues();
+            if (description.id == 0) continue;
             values.put(WeatherTable.COLUMN_TEMPERATURE, description.main.temp);
             values.put(WeatherTable.COLUMN_PRESSURE, description.main.pressure);
             values.put(WeatherTable.COLUMN_WIND, description.wind.speed);
-            values.put(WeatherTable.COLUMN_REFRESH_TIME, new Date().toString());
-            resolver.update(MainFragment.ENTRIES_URI, values, WeatherTable.COLUMN_CITY + " = '" + description.name + "'", null);
+            values.put(WeatherTable.COLUMN_REFRESH_TIME, time);
+            resolver.update(MainActivity.ENTRIES_URI, values, WeatherTable.COLUMN_CITY + " = '" + description.name + "'", null);
+        }
+        if (view != null && cities.size() == 1) {
+            JsonWeatherDescription d = cities.get(0);
+            ((TextView) view.findViewById(R.id.city_name)).setText(resources.getString(R.string.city_name) + d.name);
+            ((TextView) view.findViewById(R.id.temperature)).setText(resources.getString(R.string.temperature) + d.main.temp);
+            ((TextView) view.findViewById(R.id.pressure)).setText(resources.getString(R.string.pressure) + d.main.pressure);
+            ((TextView) view.findViewById(R.id.wind)).setText(resources.getString(R.string.wind) + d.wind.speed);
+            ((TextView) view.findViewById(R.id.last_update)).setText(resources.getString(R.string.last_update)
+                    + new Date(time).toString());
         }
     }
 

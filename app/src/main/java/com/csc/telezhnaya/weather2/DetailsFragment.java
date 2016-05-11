@@ -80,6 +80,16 @@ public class DetailsFragment extends Fragment {
             }
         });
 
+        Button back = (Button) view.findViewById(R.id.back);
+        if (back != null) {
+            back.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    getFragmentManager().beginTransaction().replace(R.id.fragment_all, new MainFragment()).commit();
+                }
+            });
+        }
+
         return view;
     }
 
